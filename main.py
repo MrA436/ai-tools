@@ -34,13 +34,16 @@ def extract_text_from_pdf(pdf_path):
             text += temp + '\n'
 
         else:
+            convert_kwargs = {
+                "pdf_path": pdf_path,
+                "first_page": i + 1,
+                "last_page": i + 1,
+            }
 
-            images = convert_from_path(
-                pdf_path,
-                first_page=i + 1,
-                last_page=i + 1,
-                poppler_path=r"C:\other apps\poppler-26.02.0\Library\bin"
-            )
+            if os.name == "nt":
+                convert_kwargs["poppler_path"] = r"C:\other apps\poppler-26.02.0\Library\bin"
+
+            images = convert_from_path(**convert_kwargs)
 
             img = np.array(images[0])
 

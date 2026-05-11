@@ -1,7 +1,7 @@
 import streamlit as st
 from main import generate_notes, extract_text_from_pdf
 
-st.set_page_config(page_title="AI-Notes-Summarizer", layout="centered")
+st.set_page_config(page_title="Revizen", layout="centered")
 st.markdown("""
 
 <style>
@@ -78,10 +78,33 @@ st.markdown("""
 
 /* File uploader */
 [data-testid="stFileUploader"] {
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 10px;
-    background: rgba(255,255,255,0.02);
+
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+
+    padding: 14px;
+
+    background: linear-gradient(
+        145deg,
+        rgba(255,255,255,0.04),
+        rgba(255,255,255,0.02)
+    );
+
+    box-shadow:
+        0 0 20px rgba(77,166,255,0.05);
+
+    transition: all 0.25s ease;
+}
+
+/* Upload box hover */
+[data-testid="stFileUploader"]:hover {
+
+    border: 1px solid rgba(77,166,255,0.25);
+
+    box-shadow:
+        0 0 28px rgba(77,166,255,0.12);
+
+    transform: translateY(-1px);
 }
 
 /* Text area */
@@ -99,7 +122,7 @@ textarea {
 st.markdown("""
 
 <div class="main-title">
-AI Notes Summarizer
+Revizen
 </div>
 
 <div class="sub-text">

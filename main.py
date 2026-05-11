@@ -1,45 +1,49 @@
-import pypdf as pdf
-from groq import Groq
-from dotenv import load_dotenv
 import os
 import cv2
-import easyocr as ocr
-import pdf2image
 import numpy as np
+import streamlit as st
+import pypdf as pdf
+import easyocr as ocr
+from groq import Groq
+from dotenv import load_dotenv
+from pdf2image import convert_from_path
 
 load_dotenv()
-
 client = Groq(
-    api_key= os.getenv("GROQ_API_KEY")
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
-model="llama-3.1-8b-instant"
-ocr_reader = ocr.Reader(['en'])
+model = "llama-3.1-8b-instant"
 
-from pdf2image import convert_from_path
-import cv2
-import numpy as np
+@st.cache_resource
+def load_ocr():
+    return ocr.Reader(['en'], gpu=False)
+
+ocr_reader = load_ocr()
 
 def extract_text_from_pdf(pdf_path):
     reader = pdf.PdfReader(pdf_path)
     text = ''
 
     for i, page in enumerate(reader.pages):
+
         temp = page.extract_text()
 
         if temp and temp.strip():
+
             text += temp + '\n'
 
         else:
+
             images = convert_from_path(
                 pdf_path,
                 first_page=i + 1,
-                last_page=i + 1
+                last_page=i + 1,
+                poppler_path=r"C:\other apps\poppler-26.02.0\Library\bin"
             )
 
             img = np.array(images[0])
 
-            # resize smaller
             img = cv2.resize(
                 img,
                 (img.shape[1] // 2, img.shape[0] // 2)
@@ -49,69 +53,53 @@ def extract_text_from_pdf(pdf_path):
 
             for txt in results:
                 text += txt + '\n'
-
     return text
 
+
 def generate_notes(text):
+    text = text.replace("\n", " ")
+    text = " ".join(text.split())
+
+    text = text[:8000]
+
     prompt = f"""
-    You are an intelligent exam-focused study assistant.
+    Create:
 
-    Analyze the provided study material and generate highly useful student revision content.
+    1. Clean Summary
+    2. Important Exam Questions with Answers
+    3. Revision Notes
+    4. Important Keywords
 
-    Instructions:
-
-    * Keep explanations concise and easy to understand.
-    * Focus only on the most important concepts.
-    * Do NOT add information not present in the notes.
-    * Use clean markdown formatting.
-    * Avoid long paragraphs.
-    * Use bullet points wherever possible.
-    * Make the output highly exam-oriented and revision-friendly.
-
-    Generate the output in the following structure:
-
-    # Clean Summary
-
-    * Provide a concise but complete summary of the topic.
-    * Explain important ideas in simple language.
-    * Focus on concepts most likely to appear in exams.
-
-    # Important Exam Questions
-
-    Generate:
-
-    * Short answer questions with concise answers
-    * 5-mark questions with structured answers
-    * Long answer/theory questions with detailed answers
-    * Viva questions with direct one-line answers if applicable
-
-    Formatting Rules:
-
-    * Write each question first
-    * Then provide its answer directly below it
-    * Keep answers concise but exam-ready
-    * Use bullet points wherever possible
-
-    # Revision Notes
-
-    Create rapid revision material including:
-
-    * Key concepts
-    * Important definitions
-    * Important formulas
-    * Important derivations/theorems if present
-    * Memory-friendly bullet points
-    * Important facts students should revise before exams
-
-    # Important Keywords
-
-    List the most important exam keywords and terms students should remember.
+    Rules:
+    - Keep output concise
+    - Use markdown formatting
+    - Use bullet points
+    - Focus only on important exam concepts
+    - Do not add information outside the notes
 
     Study Material:
     {text}
     """
 
-    response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model=model)
-    notes = response.choices[0].message.content
-    return notes
+    try:
 
+        response = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            model=model
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+
+        return f"Error generating notes: {str(e)}"
+
+def delete_temp_file():
+    if os.path.exists("temp.pdf"):
+        os.remove("temp.pdf")
+    

@@ -2,6 +2,7 @@ import pypdf as pdf
 from groq import Groq
 from dotenv import load_dotenv
 import os
+import cv2
 import easyocr as ocr
 import pdf2image
 import numpy as np
@@ -15,21 +16,40 @@ client = Groq(
 model="llama-3.1-8b-instant"
 ocr_reader = ocr.Reader(['en'])
 
+from pdf2image import convert_from_path
+import cv2
+import numpy as np
+
 def extract_text_from_pdf(pdf_path):
     reader = pdf.PdfReader(pdf_path)
-    images  = None
     text = ''
+
     for i, page in enumerate(reader.pages):
         temp = page.extract_text()
-        if temp:
+
+        if temp and temp.strip():
             text += temp + '\n'
+
         else:
-            if images is None:
-                images  = pdf2image.convert_from_path(pdf_path)
-            img = np.array(images[i])
+            images = convert_from_path(
+                pdf_path,
+                first_page=i + 1,
+                last_page=i + 1
+            )
+
+            img = np.array(images[0])
+
+            # resize smaller
+            img = cv2.resize(
+                img,
+                (img.shape[1] // 2, img.shape[0] // 2)
+            )
+
             results = ocr_reader.readtext(img, detail=0)
+
             for txt in results:
                 text += txt + '\n'
+
     return text
 
 def generate_notes(text):

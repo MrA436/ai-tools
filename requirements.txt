@@ -4,3 +4,4 @@ python-dotenv
 easyocr
 pdf2image
 streamlit
+opencv-python-headless

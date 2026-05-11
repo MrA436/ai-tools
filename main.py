@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import easyocr as ocr
 import pdf2image
+import numpy as np
 
 load_dotenv()
 
@@ -25,7 +26,7 @@ def extract_text_from_pdf(pdf_path):
         else:
             if images is None:
                 images  = pdf2image.convert_from_path(pdf_path)
-            img = images[i]
+            img = np.array(images[i])
             results = ocr_reader.readtext(img, detail=0)
             for txt in results:
                 text += txt + '\n'
@@ -33,46 +34,63 @@ def extract_text_from_pdf(pdf_path):
 
 def generate_notes(text):
     prompt = f"""
-        You are an intelligent exam-focused study assistant.
+    You are an intelligent exam-focused study assistant.
 
-        Analyze the provided study material and generate highly useful student revision content.
+    Analyze the provided study material and generate highly useful student revision content.
 
-        Instructions:
+    Instructions:
 
-        * Keep explanations concise and easy to understand.
-        * Focus only on the most important concepts.
-        * Do NOT add information not present in the notes.
-        * Use clean markdown formatting.
-        * Avoid long paragraphs.
-        * Use bullet points wherever possible.
+    * Keep explanations concise and easy to understand.
+    * Focus only on the most important concepts.
+    * Do NOT add information not present in the notes.
+    * Use clean markdown formatting.
+    * Avoid long paragraphs.
+    * Use bullet points wherever possible.
+    * Make the output highly exam-oriented and revision-friendly.
 
-        Generate the output in the following structure:
+    Generate the output in the following structure:
 
-        # Clean Summary
+    # Clean Summary
 
-        * Provide a concise but complete summary of the topic.
-        * Explain important ideas in simple language.
-        * Focus on concepts most likely to appear in exams.
+    * Provide a concise but complete summary of the topic.
+    * Explain important ideas in simple language.
+    * Focus on concepts most likely to appear in exams.
 
-        # Important Exam Questions
+    # Important Exam Questions
 
-        Generate:
+    Generate:
 
-        * Short answer questions with concise answers
-        * 5-mark questions with structured answers
-        * Long answer/theory questions with detailed answers
-        * Viva questions with direct one-line answers if applicable
+    * Short answer questions with concise answers
+    * 5-mark questions with structured answers
+    * Long answer/theory questions with detailed answers
+    * Viva questions with direct one-line answers if applicable
 
-        Formatting Rules:
+    Formatting Rules:
 
-        * Write each question first
-        * Then provide its answer directly below it
-        * Keep answers concise but exam-ready
-        * Use bullet points wherever possible`
+    * Write each question first
+    * Then provide its answer directly below it
+    * Keep answers concise but exam-ready
+    * Use bullet points wherever possible
 
-        Study Material:
-        {text}
+    # Revision Notes
+
+    Create rapid revision material including:
+
+    * Key concepts
+    * Important definitions
+    * Important formulas
+    * Important derivations/theorems if present
+    * Memory-friendly bullet points
+    * Important facts students should revise before exams
+
+    # Important Keywords
+
+    List the most important exam keywords and terms students should remember.
+
+    Study Material:
+    {text}
     """
+
     response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model=model)
     notes = response.choices[0].message.content
     return notes

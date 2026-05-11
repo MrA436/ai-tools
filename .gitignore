@@ -1,5 +1,11 @@
-.env
-__pycache__/
-out-meta-create.pdf
-output.txt
-Sir_Deep_Analysis.pdf
+# Ignore everything
+
+*
+
+# Allow project files
+
+!app.py
+!main.py
+!README.md
+!requirements.txt
+!.gitignore

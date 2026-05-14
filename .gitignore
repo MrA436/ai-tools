@@ -1,12 +1,25 @@
-# Ignore everything
+# Python cache
+__pycache__/
+*.pyc
 
-*
+# Environment variables
+.env
 
-# Allow project files
+# Temporary files
+temp.pdf
+output.txt
 
-!app.py
-!main.py
-!README.md
-!requirements.txt
-!.gitignore
-!packages.txt
+# Uploaded/sample PDFs
+*.pdf
+
+# Virtual environments
+venv/
+.env/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

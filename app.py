@@ -1,5 +1,5 @@
 import streamlit as st
-from main import generate_notes, extract_text_from_pdf
+from core.pipeline import generate_notes, extract_text_from_pdf
 
 st.set_page_config(page_title="Revizen", layout="centered")
 st.markdown("""

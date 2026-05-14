@@ -1,7 +1,11 @@
+streamlit
 pypdf
 groq
 python-dotenv
 easyocr
 pdf2image
-streamlit
 opencv-python-headless
+numpy
+fastapi
+uvicorn
+python-multipart
